@@ -3,7 +3,7 @@
 #include <opencv2/opencv.hpp>
 #include <unistd.h>
 int main() {	
-	RtspThread clientThread("rtsp://10.0.63.200:554", "admin", "wavecamera1");
+	RtspThread clientThread("rtsp://192.168.1.64:554", "admin", "admin");
 	clientThread.Run();
 	cv::Mat m_frameMat;
 	while(1) {
