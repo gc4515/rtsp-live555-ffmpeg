@@ -30,8 +30,6 @@ Objs := ${CxxSources:.cpp=.o}
 
 Deps := ${Objs:.o=.d}
 
-INC := -I include
-
 TARGET := openRtsp
 
 .PHONY: all clean
