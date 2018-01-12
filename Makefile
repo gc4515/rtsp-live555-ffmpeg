@@ -22,7 +22,7 @@ LIBRARYS += -L /usr/local/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -l
 
 LINKFLAGS := 
 
-CXXFLAGS += -o2 -std=gnu++11 -fPIC -Wdeprecated-declarations -pthread
+CXXFLAGS += -O2 -std=gnu++11 -fPIC -Wdeprecated-declarations -pthread
 
 CxxSources := $(shell find -iname *.cpp)
   
