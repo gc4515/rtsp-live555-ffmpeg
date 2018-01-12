@@ -1,38 +1,53 @@
-CXX := g++
+PLATFORM=linux_x64
+DEBUG=YES
 
-INCLUDE_DIRS += -I./include
-INCLUDE_DIRS += -I/usr/local/include
-INCLUDE_DIRS += -I/usr/local/include/BasicUsageEnvironment
-INCLUDE_DIRS += -I/usr/local/include/groupsock
-INCLUDE_DIRS += -I/usr/local/include/liveMedia
-INCLUDE_DIRS += -I/usr/local/include/UsageEnvironment
+ifeq ($(PLATFORM), linux_x64)
+CROSS_COMPILE:=
+else
+CROSS_COMPILE:=arm-linux-
+endif
+CXX=${CROSS_COMPILE}g++
 
+ifeq ($(DEBUG), YES)
+CXXFLAGS += -Wall -g
+endif
+
+
+INCLUDE_DIRS += -I./include -I/usr/local/include
+INCLUDE_DIRS += -I/usr/local/include/BasicUsageEnvironment -I/usr/local/include/groupsock -I/usr/local/include/liveMedia -I/usr/local/include/UsageEnvironment
+
+#live555 lib 链接顺序不能变
+LIBRARYS += -L /usr/local/lib -lliveMedia -lgroupsock -lUsageEnvironment -lBasicUsageEnvironment
+LIBRARYS += -L /usr/local/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lavcodec -lavutil -lswscale -lavformat
 
 LINKFLAGS := 
 
-#live555 lib 链接顺序不能变
-LIBRARYS += -L /usr/local/lib -lliveMedia -lgroupsock -lUsageEnvironment -lBasicUsageEnvironment 
-LIBRARYS += -L /usr/local/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lavcodec -lavutil -lswscale -lavformat 
-LIBRARYS += -L /usr/lib -pthread
- 
-CXXFLAGS := -Wall -g -std=gnu++11 -fPIC -Wdeprecated-declarations
- 
-SRCS :=  ./src/main.cpp \
-		./src/rtsp_client.cpp \
-		./src/ffmpeg_h264.cpp
-	
- 
-OBJS := ${SRCS:.cpp=.o}
+CXXFLAGS += -o2 -std=gnu++11 -fPIC -Wdeprecated-declarations -pthread
 
-BIN_NAME := openRtsp
+CxxSources := $(shell find -iname *.cpp)
+  
+Objs := ${CxxSources:.cpp=.o}
 
-all: $(BIN_NAME)
+Deps := ${Objs:.o=.d}
 
-$(BIN_NAME) : $(OBJS) 
-	$(CXX) $(CXXFLAGS) $(LINKFLAGS) -o $(BIN_NAME) $^ $(LIBRARYS) 
+INC := -I include
 
-./src/%.o: ./src/%.cpp
-	$(CXX) -c $(INCLUDE_DIRS) $(CXXFLAGS) $< -o $@
-	
+TARGET := openRtsp
+
+.PHONY: all clean
+
+all: $(Objs)
+	$(CXX) $(CXXFLAGS) $(LINKFLAGS) -o $(TARGET) $^ $(LIBRARYS)
+
+sinclude $(Deps)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -MM -MT $@ -MF $(patsubst %.o, %.d, $@) $<
+	$(CXX) -c $(INCLUDE_DIRS) $(CXXFLAGS) $< -o $@	
+
 clean:
-	rm -rf ./src/*.o  $(BIN_NAME)
+	rm -rf $(Deps) $(Objs) $(TARGET)
+
+
+
+
